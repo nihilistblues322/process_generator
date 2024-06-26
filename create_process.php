@@ -33,7 +33,7 @@ function RandomFieldGeneration()
 {
     $fieldTypes = ['text', 'number', 'date'];
     $process = new Process('Process' . generateUniqueThreeDigitNumber());
-    for ($i = 0; $i < 10; $i++) {
+    for ($i = 0; $i < mt_rand(2, 5); $i++) {
         $type = $fieldTypes[array_rand($fieldTypes)];
         switch ($type) {
             case 'text':
@@ -57,7 +57,8 @@ function RandomFieldGeneration()
 
 $repository->save(RandomFieldGeneration());
 
-$processes = $repository->getAll(1, 10);
+$processes = $repository->getAll(1, 100);
+
 foreach ($processes as $process) {
     echo "Process: {$process->getName()}\n";
     foreach ($process->getFormattedFields() as $name => $value) {
