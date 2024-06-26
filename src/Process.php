@@ -2,25 +2,34 @@
 
 namespace src;
 
-use src\Fields\FieldInterface;
+use src\Fields\Interfaces\IField;
 
 
 class Process
 {
-    public $id;
-    public $name;
-    private $fields = [];
+    private ?int $id;
+    private string $name;
+    private array $fields = [];
 
-    public function __construct($id, $name)
+    public function __construct(string $name, ?int $id = null)
     {
-        $this->id = $id;
         $this->name = $name;
+        $this->id = $id;
     }
 
-    public function addField(FieldInterface $field): void
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function addField(IField $field): void
     {
         $this->fields[$field->getName()] = $field;
-        
     }
 
     public function getFields(): array
@@ -28,12 +37,12 @@ class Process
         return $this->fields;
     }
 
-    public function __toString(): string
+    public function getFormattedFields(): array
     {
-        $result = "Process: {$this->name}\n";
+        $formatted = [];
         foreach ($this->fields as $field) {
-            $result .= "{$field->getName()} ({$field->getType()}): {$field}\n";
+            $formatted[$field->getName()] = $field->format();
         }
-        return $result;
+        return $formatted;
     }
 }

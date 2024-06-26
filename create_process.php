@@ -1,59 +1,67 @@
 <?php
+require_once __DIR__ . '/vendor/autoload.php';
 
 use src\Process;
 use src\Fields\DateField;
 use src\Fields\TextField;
-use src\Database\Database;
 use src\Fields\NumberField;
 use src\Database\ProcessRepository;
 
-require 'vendor/autoload.php';
+$repository = new ProcessRepository('database.sqlite');
 
-$path = __DIR__ . '/database.sqlite';
-
-$db = new Database($path);
-$repository = new ProcessRepository($db);
-
-
-$fieldType = mt_rand(1, 3); 
-$processName = 'Process-' . generateRandomString(5);
-$randomText = generateRandomString();
-$randomNumber = mt_rand(1, 1000) / 10;
-$randomDate = date('Y-m-d', mt_rand(strtotime('2000-01-01'), strtotime('2023-12-31')));
-
-
-$process = new Process(null, $processName);
-
-
-switch ($fieldType) {
-    case 1:
-        $process->addField(new TextField('Text', $randomText));
-        break;
-    case 2:
-        $process->addField(new NumberField('Number', $randomNumber, '%+.2f'));
-        break;
-    case 3:
-        $process->addField(new DateField('Date', $randomDate, 'Y-m-d'));
-        break;
-}
-
-
-$repository->saveProcess($process);
-
-
-$processes = $repository->getProcesses(100, 0);
-
-foreach ($processes as $proc) {
-    echo "Process ID: " . $proc['id'] . "\n";
-    echo "Process Name: " . $proc['name'] . "\n";
-}
-
-function generateRandomString($length = 10)
+function generateUniqueThreeDigitNumber()
 {
-    $characters = '123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    $randomString = '';
+    static $usedNumbers = [];
+    do {
+        $number = str_pad(rand(0, 999), 3, '0', STR_PAD_LEFT);
+    } while (isset($usedNumbers[$number]));
+    $usedNumbers[$number] = true;
+    return $number;
+}
+
+function generateRandomText($length = 10)
+{
+    $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    $randomText = '';
     for ($i = 0; $i < $length; $i++) {
-        $randomString .= $characters[rand(0, strlen($characters) - 1)];
+        $randomText .= $characters[rand(0, strlen($characters) - 1)];
     }
-    return $randomString;
+    return $randomText;
+}
+
+function RandomFieldGeneration()
+{
+    $fieldTypes = ['text', 'number', 'date'];
+    $process = new Process('Process' . generateUniqueThreeDigitNumber());
+    for ($i = 0; $i < 10; $i++) {
+        $type = $fieldTypes[array_rand($fieldTypes)];
+        switch ($type) {
+            case 'text':
+                $name = "Text" . generateUniqueThreeDigitNumber();
+                $field = new TextField($name, generateRandomText());
+                break;
+            case 'number':
+                $name = "Number" . generateUniqueThreeDigitNumber();
+                $field = new NumberField($name, rand(0, 100000) / 100, '%.2f');
+                break;
+            case 'date':
+                $name = "Date" . generateUniqueThreeDigitNumber();
+                $randomDate = new DateTime(date('Y-m-d', strtotime(sprintf('%+d days', rand(-365, 365)))));
+                $field = new DateField($name, $randomDate, 'd.m.Y');
+                break;
+        }
+        $process->addField($field);
+    }
+    return $process;
+}
+
+$repository->save(RandomFieldGeneration());
+
+$processes = $repository->getAll(1, 10);
+foreach ($processes as $process) {
+    echo "Process: {$process->getName()}\n";
+    foreach ($process->getFormattedFields() as $name => $value) {
+        echo "{$name}: {$value}\n";
+    }
+    echo "\n";
 }

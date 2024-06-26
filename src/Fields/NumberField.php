@@ -2,17 +2,17 @@
 
 namespace src\Fields;
 
-class NumberField implements FieldInterface
-{
-    private $name;
-    private $type;
-    private $value;
-    private $format;
+use src\Fields\Interfaces\IField;
 
-    public function __construct($name, $value = 0, $format = null)
+class NumberField implements IField
+{
+    private string $name;
+    private float $value;
+    private string $format;
+
+    public function __construct(string $name, float $value = 0, string $format = '%d')
     {
         $this->name = $name;
-        $this->type = 'number';
         $this->value = $value;
         $this->format = $format;
     }
@@ -21,25 +21,29 @@ class NumberField implements FieldInterface
     {
         return $this->name;
     }
+
     public function getType(): string
     {
-        return $this->type;
+        return 'number';
     }
-    public function getValue()
+
+    public function getValue(): float
     {
         return $this->value;
     }
-    public function getFormat(): ?string
+
+    public function getDefaultValue(): float
+    {
+        return 0;
+    }
+
+    public function getFormat(): string
     {
         return $this->format;
     }
-    public function setValue($value): void
-    {
-        $this->value = $value;
-    }
 
-    public function __toString(): string
+    public function format(): string
     {
-        return $this->format ? sprintf($this->format, $this->value) : (string) $this->value;
+        return sprintf($this->format, $this->value);
     }
 }

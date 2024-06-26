@@ -2,43 +2,40 @@
 
 namespace src\Fields;
 
-class TextField implements FieldInterface
-{
-    private $name;
-    private $type;
-    private $value;
-    private $format;
+use src\Fields\Interfaces\IField;
 
-    public function __construct($name, $value = '', $format = null)
+class TextField implements IField
+{
+    private string $name;
+    private string $value;
+
+    public function __construct(string $name, string $value = '')
     {
         $this->name = $name;
-        $this->type = 'text';
         $this->value = $value;
-        $this->format = $format;
     }
 
     public function getName(): string
     {
         return $this->name;
     }
+
     public function getType(): string
     {
-        return $this->type;
+        return 'text';
     }
-    public function getValue()
+
+    public function getValue(): string
     {
         return $this->value;
     }
-    public function getFormat(): ?string
+
+    public function getDefaultValue(): string
     {
-        return $this->format;
-    }
-    public function setValue($value): void
-    {
-        $this->value = $value;
+        return '';
     }
 
-    public function __toString(): string
+    public function format(): string
     {
         return $this->value;
     }

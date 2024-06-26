@@ -3,21 +3,19 @@
 namespace src\Fields;
 
 use DateTime;
+use src\Fields\Interfaces\IField;
 
-class DateField implements FieldInterface
+class DateField implements IField
 {
-    private $name;
-    private $type;
-    private $value;
-    private $format;
-    private $dateFormat;
+    private string $name;
+    private DateTime $value;
+    private string $format;
 
-    public function __construct($name, $value = null, $dateFormat = 'Y-m-d')
+    public function __construct(string $name, ?DateTime $value = null, string $format = 'Y-m-d')
     {
         $this->name = $name;
-        $this->type = 'date';
-        $this->value = $value ? new DateTime($value) : new DateTime();
-        $this->dateFormat = $dateFormat;
+        $this->value = $value ?? new DateTime();
+        $this->format = $format;
     }
 
     public function getName(): string
@@ -27,31 +25,26 @@ class DateField implements FieldInterface
 
     public function getType(): string
     {
-        return $this->type;
+        return 'date';
     }
 
-    public function getValue()
+    public function getValue(): DateTime
     {
-        return $this->value->format('Y-m-d');
+        return $this->value;
     }
 
-    public function getFormat(): ?string
+    public function getDefaultValue(): DateTime
+    {
+        return new DateTime();
+    }
+
+    public function getFormat(): string
     {
         return $this->format;
     }
 
-    public function getDateFormat(): string
+    public function format(): string
     {
-        return $this->dateFormat;
-    }
-
-    public function setValue($value): void
-    {
-        $this->value = new DateTime($value);
-    }
-
-    public function __toString(): string
-    {
-        return $this->value->format($this->dateFormat);
+        return $this->value->format($this->format);
     }
 }

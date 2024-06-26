@@ -1,72 +1,44 @@
 <?php
 
-
 use src\Process;
 use src\Fields\DateField;
 use src\Fields\TextField;
 use src\Fields\NumberField;
-use src\Database\Database;
 use PHPUnit\Framework\TestCase;
-use src\Database\ProcessRepository;
+
+
 
 class ProcessTest extends TestCase
 {
-    private $db;
-    private $repository;
-
-    protected function setUp(): void
+    public function testProcessCreation()
     {
-        $this->db = new Database(__DIR__ . '/database.sqlite');
-        $this->repository = new ProcessRepository($this->db);
+        $process = new Process('Test Process');
+        $this->assertInstanceOf(Process::class, $process);
     }
 
-    public function testCreateProcess(): void
+    public function testAddField()
     {
-        for ($i = 0; $i < 15; $i++) {
-            $processName = 'Process-' . $this->generateRandomString(5);
-            $process = new Process(null, $processName);
+        $process = new Process('Test Process');
+        $textField = new TextField('Text', 'Sample Text');
+        $process->addField($textField);
 
-            $this->addFieldRandomly($process);
-
-            $this->repository->saveProcess($process);
-
-            $this->assertNotEmpty($process->id);
-            $this->assertCount(1, $process->getFields());
-        }
+        $fields = $process->getFields();
+        $this->assertCount(1, $fields);
+        $this->assertArrayHasKey('Text', $fields);
     }
 
-
-    public function addFieldRandomly(Process $process)
+    public function testGetFormattedFields()
     {
-        $fieldType = mt_rand(1, 3);
-        $randomText = $this->generateRandomString(7);
-        $randomNumber = mt_rand(100, 1000) + mt_rand() / mt_getrandmax() * 100;
-        $randomTimestamp = mt_rand(strtotime('2023-01-01'), strtotime('2024-12-31'));
-        $randomDate = date('d.m.Y', $randomTimestamp);
+        $process = new Process('Test Process');
+        $process->addField(new TextField('Text', 'Sample Text'));
+        $process->addField(new NumberField('Number', 123.45, '%.2f'));
+        $process->addField(new DateField('Date', new DateTime("2023-06-26"), 'd.m.Y'));
 
-        switch ($fieldType) {
-            case 1:
-                $process->addField(new TextField('Text', $randomText));
-                break;
-            case 2:
-                $process->addField(new NumberField('Number', $randomNumber, '%+.2f'));
-                break;
-            case 3:
-                $process->addField(new DateField('Date', $randomDate, 'd.m.Y'));
-                break;
-        }
+        $formatted = $process->getFormattedFields();
+        $this->assertEquals('Sample Text', $formatted['Text']);
+        $this->assertEquals('123.45', $formatted['Number']);
+        $this->assertEquals('26.06.2023', $formatted['Date']);
     }
 
-
-    public static function generateRandomString($length = 10)
-    {
-        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $charactersLength = strlen($characters);
-        $randomString = '';
-        for ($i = 0; $i < $length; $i++) {
-            $randomString .= $characters[rand(0, $charactersLength - 1)];
-        }
-        return $randomString;
-    }
-
+    
 }
